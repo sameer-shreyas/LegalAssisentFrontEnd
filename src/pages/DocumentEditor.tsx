@@ -6,6 +6,7 @@ import toast from 'react-hot-toast';
 import AnalysisPanel from '../components/AnalysisPanel';
 import ClausePanel from '../components/ClausePanel';
 import ChatPanel from '../components/ChatPanel';
+import ExplanationPanel from '../components/ExplanationPanel';
 
 interface Document {
   id: string;
@@ -45,10 +46,11 @@ const DocumentEditor: React.FC = () => {
   const [document, setDocument] = useState<Document | null>(null);
   const [selectedText, setSelectedText] = useState('');
   const [loading, setLoading] = useState(true);
-  const [activePanel, setActivePanel] = useState<'analysis' | 'clauses' | 'chat'>('analysis');
+  const [activePanel, setActivePanel] = useState<'analysis' | 'clauses' | 'chat' | 'explanation'>('analysis');
   const [analysis, setAnalysis] = useState<AnalysisResponse>(null);  const [clauses, setClauses] = useState<any[]>([]);
   const [simplifiedText, setSimplifiedText] = useState<string>('');
   const [analyzing, setAnalyzing] = useState(false);
+  const [explanation, setExplanation] = useState<{original: string; simplified: string; keyPoints: string[]} | null>(null);
 
   useEffect(() => {
     fetchDocument();
@@ -126,27 +128,34 @@ const DocumentEditor: React.FC = () => {
     }
   };
 
-  const explainSimple = async () => {
-    if (!selectedText) {
-      toast.error('Please select some text first');
-      return;
-    }
+  // Update explainSimple function
+const explainSimple = async () => {
+  if (!selectedText) {
+    toast.error('Please select some text first');
+    return;
+  }
 
-    setAnalyzing(true);
-    setSimplifiedText(''); // Clear previous explanation
-    try {
-      const response = await axios.post('/api/explain-simple', {
-        text: selectedText
-      });
-      setSimplifiedText(response.data.simplified);
-      toast.success('Text simplified successfully');
-    } catch (error) {
-      console.error('Explanation error:', error);
-      toast.error('Failed to explain text. Please try again.');
-    } finally {
-      setAnalyzing(false);
-    }
-  };
+  setAnalyzing(true);
+  setExplanation(null);
+  try {
+    const response = await axios.post('/api/explain-simple', {
+      text: selectedText
+    });
+    
+    setExplanation({
+      original: response.data.original,
+      simplified: response.data.simplified,
+      keyPoints: response.data.keyPoints
+    });
+    setActivePanel('explanation'); // Switch to explanation panel
+    toast.success('Text simplified successfully');
+  } catch (error) {
+    console.error('Explanation error:', error);
+    toast.error('Failed to explain text. Please try again.');
+  } finally {
+    setAnalyzing(false);
+  }
+};
 
   const highlightClauses = (text: string) => {
     let highlightedText = text;
@@ -225,13 +234,14 @@ const DocumentEditor: React.FC = () => {
                     Review
                   </button>
                   <button
-                    onClick={explainSimple}
-                    disabled={analyzing}
-                    className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm hover:bg-green-200 disabled:opacity-50"
-                  >
-                    <HelpCircle className="h-3 w-3 mr-1 inline" />
-                    Explain Simple
-                  </button>
+                  onClick={explainSimple}
+                  disabled={analyzing}
+                  className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm hover:bg-green-200 disabled:opacity-50"
+                >
+                  <HelpCircle className="h-3 w-3 mr-1 inline" />
+                  Explanation
+                </button>
+
                 </div>
               )}
             </div>
@@ -314,6 +324,18 @@ const DocumentEditor: React.FC = () => {
             <MessageSquare className="h-4 w-4 mr-2 inline" />
             Chat
           </button>
+          <button
+          onClick={() => setActivePanel('explanation')}
+          className={`flex-1 px-4 py-3 text-sm font-medium ${
+            activePanel === 'explanation'
+              ? 'bg-blue-50 text-blue-700 border-b-2 border-blue-500'
+              : 'text-gray-600 hover:text-gray-900'
+          }`}
+        >
+          <HelpCircle className="h-4 w-4 mr-2 inline" />
+          Explanation
+        </button>
+
         </div>
 
         {/* Panel Content */}
@@ -326,6 +348,9 @@ const DocumentEditor: React.FC = () => {
           )}
           {activePanel === 'chat' && (
             <ChatPanel documentText={document.extractedText} />
+          )}
+          {activePanel === 'explanation' && (
+            <ExplanationPanel explanation={explanation} analyzing={analyzing} />
           )}
         </div>
       </div>
