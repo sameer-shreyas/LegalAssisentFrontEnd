@@ -14,6 +14,31 @@ interface Document {
   originalName: string;
 }
 
+// Add these analysis type interfaces
+interface RiskAnalysis {
+  type: 'risk';
+  risks: string[];
+  mitigations: string[];
+  confidence: number;
+}
+
+interface ReviewAnalysis {
+  type: 'review';
+  strengths: string[];
+  weaknesses: string[];
+  recommendations: string[];
+  confidence: number;
+}
+
+interface AmbiguityAnalysis {
+  type: 'ambiguity';
+  ambiguousTerms: string[];
+  clarifications: string[];
+  confidence: number;
+}
+
+type AnalysisResponse = RiskAnalysis | ReviewAnalysis | AmbiguityAnalysis | null;
+
 const DocumentEditor: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -21,8 +46,7 @@ const DocumentEditor: React.FC = () => {
   const [selectedText, setSelectedText] = useState('');
   const [loading, setLoading] = useState(true);
   const [activePanel, setActivePanel] = useState<'analysis' | 'clauses' | 'chat'>('analysis');
-  const [analysis, setAnalysis] = useState<any>(null);
-  const [clauses, setClauses] = useState<any[]>([]);
+  const [analysis, setAnalysis] = useState<AnalysisResponse>(null);  const [clauses, setClauses] = useState<any[]>([]);
   const [simplifiedText, setSimplifiedText] = useState<string>('');
   const [analyzing, setAnalyzing] = useState(false);
 
@@ -54,28 +78,36 @@ const DocumentEditor: React.FC = () => {
   };
 
   const analyzeSelectedText = async (analysisType: string) => {
-    if (!selectedText) {
-      toast.error('Please select some text first');
-      return;
-    }
+  if (!selectedText) {
+    toast.error('Please select some text first');
+    return;
+  }
 
-    setAnalyzing(true);
-    setAnalysis(null); // Clear previous analysis
-    try {
-      const response = await axios.post('/api/analyze-text', {
-        text: selectedText,
-        analysisType
-      });
-      setAnalysis(response.data);
-      setActivePanel('analysis');
-      toast.success('Analysis completed successfully');
-    } catch (error) {
-      console.error('Analysis error:', error);
-      toast.error('Failed to analyze text. Please try again.');
-    } finally {
-      setAnalyzing(false);
-    }
-  };
+  setAnalyzing(true);
+  setAnalysis(null);
+  
+  try {
+    const response = await axios.post('/api/analyze-text', {
+      text: selectedText,
+      analysisType
+    });
+    
+    // Add type property to response data
+    const typedResponse = {
+      ...response.data,
+      type: analysisType
+    };
+    
+    setAnalysis(typedResponse);
+    setActivePanel('analysis');
+    toast.success('Analysis completed successfully');
+  } catch (error) {
+    console.error('Analysis error:', error);
+    toast.error('Failed to analyze text. Please try again.');
+  } finally {
+    setAnalyzing(false);
+  }
+};
 
   const extractClauses = async (text: string) => {
     if (!text) return;

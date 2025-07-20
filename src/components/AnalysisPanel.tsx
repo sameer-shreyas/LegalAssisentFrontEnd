@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AlertTriangle, CheckCircle, Info, TrendingUp } from 'lucide-react';
+import { AlertTriangle, CheckCircle, Info, TrendingUp, Star, Zap, HelpCircle } from 'lucide-react';
 
 interface AnalysisPanelProps {
   analysis: any;
@@ -10,7 +10,12 @@ interface AnalysisPanelProps {
 const AnalysisPanel: React.FC<AnalysisPanelProps> = ({ analysis, selectedText, analyzing = false }) => {
   const [expandedSections, setExpandedSections] = useState<{ [key: string]: boolean }>({
     risks: true,
-    suggestions: true
+    mitigations: true,
+    strengths: true,
+    weaknesses: true,
+    recommendations: true,
+    ambiguousTerms: true,
+    clarifications: true
   });
 
   const toggleSection = (section: string) => {
@@ -39,6 +44,15 @@ const AnalysisPanel: React.FC<AnalysisPanelProps> = ({ analysis, selectedText, a
       </div>
     );
   }
+
+  // Determine which sections to show based on analysis type
+  const showRisks = analysis.type === 'risk' || analysis.risks;
+  const showMitigations = analysis.type === 'risk' || analysis.mitigations;
+  const showStrengths = analysis.type === 'review' || analysis.strengths;
+  const showWeaknesses = analysis.type === 'review' || analysis.weaknesses;
+  const showRecommendations = analysis.type === 'review' || analysis.recommendations;
+  const showAmbiguousTerms = analysis.type === 'ambiguity' || analysis.ambiguousTerms;
+  const showClarifications = analysis.type === 'ambiguity' || analysis.clarifications;
 
   return (
     <div className="p-6 space-y-6">
@@ -76,11 +90,13 @@ const AnalysisPanel: React.FC<AnalysisPanelProps> = ({ analysis, selectedText, a
       </div>
 
       {/* Risks */}
-      {analysis.risks && analysis.risks.length > 0 && (
+      {showRisks && analysis.risks && analysis.risks.length > 0 && (
         <div className="bg-red-50 p-4 rounded-lg">
           <div className="flex items-center justify-between mb-3">
-            <AlertTriangle className="h-5 w-5 text-red-600 mr-2" />
-            <h3 className="font-semibold text-red-900">Identified Risks</h3>
+            <div className="flex items-center">
+              <AlertTriangle className="h-5 w-5 text-red-600 mr-2" />
+              <h3 className="font-semibold text-red-900">Identified Risks</h3>
+            </div>
             <button
               onClick={() => toggleSection('risks')}
               className="text-red-600 hover:text-red-800"
@@ -101,12 +117,182 @@ const AnalysisPanel: React.FC<AnalysisPanelProps> = ({ analysis, selectedText, a
         </div>
       )}
 
-      {/* Suggestions */}
+      {/* Mitigations */}
+      {showMitigations && analysis.mitigations && analysis.mitigations.length > 0 && (
+        <div className="bg-green-50 p-4 rounded-lg">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center">
+              <Zap className="h-5 w-5 text-green-600 mr-2" />
+              <h3 className="font-semibold text-green-900">Mitigation Strategies</h3>
+            </div>
+            <button
+              onClick={() => toggleSection('mitigations')}
+              className="text-green-600 hover:text-green-800"
+            >
+              {expandedSections.mitigations ? '−' : '+'}
+            </button>
+          </div>
+          {expandedSections.mitigations && (
+            <ul className="space-y-2">
+              {analysis.mitigations.map((mitigation: string, index: number) => (
+                <li key={index} className="flex items-start">
+                  <div className="w-2 h-2 bg-green-500 rounded-full mt-2 mr-3 flex-shrink-0" />
+                  <span className="text-green-700 text-sm">{mitigation}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+
+      {/* Strengths */}
+      {showStrengths && analysis.strengths && analysis.strengths.length > 0 && (
+        <div className="bg-green-50 p-4 rounded-lg">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center">
+              <Star className="h-5 w-5 text-green-600 mr-2" />
+              <h3 className="font-semibold text-green-900">Strengths</h3>
+            </div>
+            <button
+              onClick={() => toggleSection('strengths')}
+              className="text-green-600 hover:text-green-800"
+            >
+              {expandedSections.strengths ? '−' : '+'}
+            </button>
+          </div>
+          {expandedSections.strengths && (
+            <ul className="space-y-2">
+              {analysis.strengths.map((strength: string, index: number) => (
+                <li key={index} className="flex items-start">
+                  <div className="w-2 h-2 bg-green-500 rounded-full mt-2 mr-3 flex-shrink-0" />
+                  <span className="text-green-700 text-sm">{strength}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+
+      {/* Weaknesses */}
+      {showWeaknesses && analysis.weaknesses && analysis.weaknesses.length > 0 && (
+        <div className="bg-yellow-50 p-4 rounded-lg">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center">
+              <AlertTriangle className="h-5 w-5 text-yellow-600 mr-2" />
+              <h3 className="font-semibold text-yellow-900">Weaknesses</h3>
+            </div>
+            <button
+              onClick={() => toggleSection('weaknesses')}
+              className="text-yellow-600 hover:text-yellow-800"
+            >
+              {expandedSections.weaknesses ? '−' : '+'}
+            </button>
+          </div>
+          {expandedSections.weaknesses && (
+            <ul className="space-y-2">
+              {analysis.weaknesses.map((weakness: string, index: number) => (
+                <li key={index} className="flex items-start">
+                  <div className="w-2 h-2 bg-yellow-500 rounded-full mt-2 mr-3 flex-shrink-0" />
+                  <span className="text-yellow-700 text-sm">{weakness}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+
+      {/* Recommendations */}
+      {showRecommendations && analysis.recommendations && analysis.recommendations.length > 0 && (
+        <div className="bg-blue-50 p-4 rounded-lg">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center">
+              <CheckCircle className="h-5 w-5 text-blue-600 mr-2" />
+              <h3 className="font-semibold text-blue-900">Recommendations</h3>
+            </div>
+            <button
+              onClick={() => toggleSection('recommendations')}
+              className="text-blue-600 hover:text-blue-800"
+            >
+              {expandedSections.recommendations ? '−' : '+'}
+            </button>
+          </div>
+          {expandedSections.recommendations && (
+            <ul className="space-y-2">
+              {analysis.recommendations.map((recommendation: string, index: number) => (
+                <li key={index} className="flex items-start">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 mr-3 flex-shrink-0" />
+                  <span className="text-blue-700 text-sm">{recommendation}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+
+      {/* Ambiguous Terms */}
+      {showAmbiguousTerms && analysis.ambiguousTerms && analysis.ambiguousTerms.length > 0 && (
+        <div className="bg-orange-50 p-4 rounded-lg">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center">
+              <HelpCircle className="h-5 w-5 text-orange-600 mr-2" />
+              <h3 className="font-semibold text-orange-900">Ambiguous Terms</h3>
+            </div>
+            <button
+              onClick={() => toggleSection('ambiguousTerms')}
+              className="text-orange-600 hover:text-orange-800"
+            >
+              {expandedSections.ambiguousTerms ? '−' : '+'}
+            </button>
+          </div>
+          {expandedSections.ambiguousTerms && (
+            <ul className="space-y-2">
+              {analysis.ambiguousTerms.map((term: string, index: number) => (
+                <li key={index} className="flex items-start">
+                  <div className="w-2 h-2 bg-orange-500 rounded-full mt-2 mr-3 flex-shrink-0" />
+                  <span className="text-orange-700 text-sm">{term}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+
+      {/* Clarifications */}
+      {showClarifications && analysis.clarifications && analysis.clarifications.length > 0 && (
+        <div className="bg-purple-50 p-4 rounded-lg">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center">
+              <CheckCircle className="h-5 w-5 text-purple-600 mr-2" />
+              <h3 className="font-semibold text-purple-900">Suggested Clarifications</h3>
+            </div>
+            <button
+              onClick={() => toggleSection('clarifications')}
+              className="text-purple-600 hover:text-purple-800"
+            >
+              {expandedSections.clarifications ? '−' : '+'}
+            </button>
+          </div>
+          {expandedSections.clarifications && (
+            <ul className="space-y-2">
+              {analysis.clarifications.map((clarification: string, index: number) => (
+                <li key={index} className="flex items-start">
+                  <div className="w-2 h-2 bg-purple-500 rounded-full mt-2 mr-3 flex-shrink-0" />
+                  <span className="text-purple-700 text-sm">{clarification}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+
+      {/* Suggestions (fallback) */}
       {analysis.suggestions && analysis.suggestions.length > 0 && (
         <div className="bg-green-50 p-4 rounded-lg">
           <div className="flex items-center justify-between mb-3">
-            <CheckCircle className="h-5 w-5 text-green-600 mr-2" />
-            <h3 className="font-semibold text-green-900">Recommendations</h3>
+            <div className="flex items-center">
+              <CheckCircle className="h-5 w-5 text-green-600 mr-2" />
+              <h3 className="font-semibold text-green-900">Recommendations</h3>
+            </div>
             <button
               onClick={() => toggleSection('suggestions')}
               className="text-green-600 hover:text-green-800"

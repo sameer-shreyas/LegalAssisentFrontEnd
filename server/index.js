@@ -189,30 +189,90 @@ app.delete('/api/files/:id', authenticateToken, (req, res) => {
 });
 
 // AI Analysis routes
+// Update /api/analyze-text route
 app.post('/api/analyze-text', authenticateToken, async (req, res) => {
   try {
     const { text, analysisType } = req.body;
     
-    // Mock Claude API integration (replace with actual Claude API call)
-    const prompt = `Analyze this legal text for ${analysisType}: ${text}`;
-    
     // Simulate API call delay
     await new Promise(resolve => setTimeout(resolve, 1000));
     
-    const analysis = {
-      type: analysisType,
-      risks: [
-        'Potential ambiguity in termination clause',
-        'Indemnification terms may be too broad',
-        'Jurisdiction clause needs clarification'
-      ],
-      suggestions: [
-        'Consider adding specific termination notice requirements',
-        'Define scope of indemnification more clearly',
-        'Specify governing law jurisdiction'
-      ],
-      confidence: 85
-    };
+    // Return different responses based on analysisType
+    let analysis;
+    switch (analysisType) {
+      case 'risk':
+        analysis = {
+          type: 'risk',
+          risks: [
+            'Potential ambiguity in termination clause',
+            'Indemnification terms may be too broad',
+            'Jurisdiction clause needs clarification'
+          ],
+          mitigations: [
+            'Add specific termination notice requirements',
+            'Define scope of indemnification more clearly',
+            'Specify governing law jurisdiction'
+          ],
+          confidence: 85
+        };
+        break;
+      
+      case 'review':
+        analysis = {
+          type: 'review',
+          strengths: [
+            'Clear ownership of work product',
+            'Well-defined payment terms',
+            'Comprehensive confidentiality provisions'
+          ],
+          weaknesses: [
+            'Vague force majeure clause',
+            'Missing audit rights for service provider',
+            'Inadequate dispute resolution mechanism'
+          ],
+          recommendations: [
+            'Add specific force majeure events',
+            'Include audit rights clause',
+            'Specify arbitration process'
+          ],
+          confidence: 78
+        };
+        break;
+      
+      case 'ambiguity':
+        analysis = {
+          type: 'ambiguity',
+          ambiguousTerms: [
+            '"Reasonable efforts" without definition',
+            '"Material breach" not quantified',
+            '"Substantial portion" without specification'
+          ],
+          clarifications: [
+            'Define "reasonable efforts" as commercially reasonable steps',
+            'Specify material breach thresholds',
+            'Quantify "substantial portion" as 20% or more'
+          ],
+          confidence: 92
+        };
+        break;
+      
+      default:
+        // Fallback to generic structure
+        analysis = {
+          type: analysisType,
+          risks: [
+            'Potential ambiguity in termination clause',
+            'Indemnification terms may be too broad',
+            'Jurisdiction clause needs clarification'
+          ],
+          suggestions: [
+            'Consider adding specific termination notice requirements',
+            'Define scope of indemnification more clearly',
+            'Specify governing law jurisdiction'
+          ],
+          confidence: 85
+        };
+    }
 
     res.json(analysis);
   } catch (error) {
