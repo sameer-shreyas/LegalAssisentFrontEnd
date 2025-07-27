@@ -32,7 +32,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Configure axios defaults
   useEffect(() => {
     // Set base URL for API calls
-    axios.defaults.baseURL = 'http://localhost:56109';
+    axios.defaults.baseURL = 'https://legalassisentbackend.onrender.com';
   }, []);
 
   useEffect(() => {
